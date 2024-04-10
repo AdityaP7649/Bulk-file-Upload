@@ -23,7 +23,7 @@ const upload = multer({
 });
 
 
-app.post("/upload", upload.array("file"), async (req, res) => {
+app.post("/uploads", upload.array("file"), async (req, res) => {
   try {
     const results = await s3Uploadv3(req.files)
     console.log(results);
