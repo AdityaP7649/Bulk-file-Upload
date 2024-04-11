@@ -23,18 +23,56 @@ const upload = multer({
 });
 
 
-app.post("/uploads", upload.array("file"), async (req, res) => {
+// app.post("/upload", upload.array("file"), async (req, res) => {
+//   try {
+//     const results = await s3Uploadv3(req.files)
+//     console.log(results);
+//     return res.json({ status: "success" });
+//   } catch (err) {
+//     console.log(err);
+//   };
+// });
+
+exports.bulkUploads = async (req, res) => {
   try {
-    const results = await s3Uploadv3(req.files)
-    console.log(results);
-    return res.json({ status: "success" });
+    upload(req, res, async (err) => {
+      if (err) {
+        console.error(err);
+        return res.status(400).json({ error: 'File Upload Error' });
+      }
+      const results = await s3Uploadv3(req.files);
+      console.log(results);
+      return res.json({ status: "success" });
+    });
   } catch (err) {
     console.log(err);
-  };
-});
+    return res.status(500).json({ error: "Server Error" });
+  }
+};
 
 //Error Handling
-app.use((error, req, res, next) => {
+// app.use((error, req, res, next) => {
+//   if (error instanceof multer.MulterError) {
+//     if (error.code === "LIMIT_FILE_SIZE") {
+//       return res.status(400).json({
+//         message: "File is too large",
+//       });
+//     }
+//     if (error.code === "LIMIT_FILE_COUNT") {
+//       return res.status(400).json({
+//         message: "File limit reached",
+//       });
+//     }
+
+//     if (error.code === "LIMIT_UNEXPECTED_FILE") {
+//       return res.status(400).json({
+//         message: "File must be in pdf format",
+//       });
+//     }
+//   }
+// });
+
+exports.multerErrorHandler = (error, req, res, next) => {
   if (error instanceof multer.MulterError) {
     if (error.code === "LIMIT_FILE_SIZE") {
       return res.status(400).json({
@@ -54,7 +92,8 @@ app.use((error, req, res, next) => {
       });
     }
   }
-});
+};
+
 
 
 app.listen(4000, () => console.log("listening on port 4000"));
